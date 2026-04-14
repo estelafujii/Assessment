@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+
 using namespace std;
 
 class Book {
@@ -7,105 +9,133 @@ private:
     string author;
     string ISBN;
     bool availability;
-    string dateAdd;
 
 public:
-    // Set book details
-    void setBookDetails(string t, string a, string i, string d) {
+    Book(string t, string a, string i) {
         title = t;
         author = a;
         ISBN = i;
-        dateAdd = d;
         availability = true;
     }
 
-    // Display book details
-    void displayBookDetails() {
-        cout << "Title: " << title << endl;
-        cout << "Author: " << author << endl;
-        cout << "ISBN: " << ISBN << endl;
-        cout << "Available: " << (availability ? "Yes" : "No") << endl;
-        cout << "---------------------------" << endl;
+    string getISBN() const {
+        return ISBN;
     }
 
-    // Borrow book
+    string getTitle() const {
+        return title;
+    }
+
+    bool isAvailable() const {
+        return availability;
+    }
+
     void borrowBook() {
         if (availability) {
             availability = false;
             cout << "Book borrowed successfully.\n";
         } else {
-            cout << "Book is not available.\n";
+            cout << "Book is already borrowed.\n";
         }
     }
 
-    // Return book
     void returnBook() {
-        availability = true;
-        cout << "Book returned successfully.\n";
+        if (!availability) {
+            availability = true;
+            cout << "Book returned successfully.\n";
+        } else {
+            cout << "Book was not borrowed.\n";
+        }
     }
 
-    // Getter for ISBN
-    string getISBN() {
-        return ISBN;
+    void display() const {
+        cout << "Title: " << title
+             << " | Author: " << author
+             << " | ISBN: " << ISBN
+             << " | Status: "
+             << (availability ? "Available" : "Not Available")
+             << endl;
     }
 };
 
-// Sorting function (outside the class)
-void sortBookData(Book books[], int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size - i - 1; j++) {
-            if (books[j].getISBN() > books[j + 1].getISBN()) {
-                Book temp = books[j];
-                books[j] = books[j + 1];
-                books[j + 1] = temp;
-            }
-        }
+// Function to display all books
+void displayBooks(Book books[], int size) {
+    for (int i = 0; i < size; i++) {
+        books[i].display();
     }
 }
 
+// Function to find book by ISBN
+int findBookByISBN(Book books[], int size, string isbn) {
+    for (int i = 0; i < size; i++) {
+        if (books[i].getISBN() == isbn) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int main() {
-    Book books[5];
 
-    // Initialize books
-    books[0].setBookDetails("C++ Basics", "John Smith", "333", "01-01-2024");
-    books[1].setBookDetails("OOP Concepts", "Jane Brown", "111", "02-01-2024");
-    books[2].setBookDetails("Algorithms", "Tom White", "555", "03-01-2024");
-    books[3].setBookDetails("Data Structures", "Lisa Green", "222", "04-01-2024");
-    books[4].setBookDetails("Programming Logic", "Mark Black", "444", "05-01-2024");
+    Book books[5] = {
+        Book("Clean Code", "Robert Martin", "111"),
+        Book("Design Patterns", "Erich Gamma", "222"),
+        Book("C++ Primer", "Lippman", "333"),
+        Book("Algorithms", "Sedgewick", "444"),
+        Book("Data Structures", "Weiss", "555")
+    };
 
-    // Sort books by ISBN
-    sortBookData(books, 5);
+    int choice;
+    string isbn;
 
-    cout << "Books sorted by ISBN:\n";
-    for (int i = 0; i < 5; i++) {
-        books[i].displayBookDetails();
-    }
+    do {
+        cout << "\n===== LIBRARY MENU =====\n";
+        cout << "1) Display Books\n";
+        cout << "2) Borrow Book\n";
+        cout << "3) Return Book\n";
+        cout << "4) Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
 
-    string inputISBN;
+        switch (choice) {
 
-    while (true) {
-        cout << "Enter ISBN to borrow (0 to exit): ";
-        cin >> inputISBN;
-
-        if (inputISBN == "0") {
+        case 1:
+            displayBooks(books, 5);
             break;
-        }
 
-        bool found = false;
-
-        for (int i = 0; i < 5; i++) {
-            if (books[i].getISBN() == inputISBN) {
-                books[i].borrowBook();
-                found = true;
-                break;
+        case 2:
+            cout << "Enter ISBN to borrow: ";
+            cin >> isbn;
+            {
+                int index = findBookByISBN(books, 5, isbn);
+                if (index != -1)
+                    books[index].borrowBook();
+                else
+                    cout << "Book not found.\n";
             }
+            break;
+
+        case 3:
+            cout << "Enter ISBN to return: ";
+            cin >> isbn;
+            {
+                int index = findBookByISBN(books, 5, isbn);
+                if (index != -1)
+                    books[index].returnBook();
+                else
+                    cout << "Book not found.\n";
+            }
+            break;
+
+        case 4:
+            cout << "Exiting program...\n";
+            break;
+
+        default:
+            cout << "Invalid option.\n";
         }
 
-        if (!found) {
-            cout << "Book not found.\n";
-        }
-    }
+    } while (choice != 4);
 
-    cout << "Program terminated.\n";
     return 0;
 }
